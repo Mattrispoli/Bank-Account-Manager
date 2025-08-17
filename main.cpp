@@ -1,4 +1,4 @@
-#include "header.h"
+#include "header.hpp"
 
 class BankAccount{
     private:
@@ -49,23 +49,15 @@ int openingAcc(std::unordered_map<int,BankAccount>& accounts, double openingAmt)
     std::cout << "Enter your initial deposit balance: ";
     std::cin >> openingAmt;
     accounts.emplace(accountNum,BankAccount(name,openingAmt,accountNum));
+    std::cout<<"Your account number is "<<accountNum<<'\n';
     return accountNum;
 }
-int main(){
-    std::unordered_map<int,BankAccount> accounts;
-    
-    bool check{true};
+
+void bankOps(std::unordered_map<int,BankAccount>& accounts, int accountNumber){
+    double withdrawAmount, depositAmount;
     int selection{0};
-    double openingAmount{0}, withdrawAmount, depositAmount;
-    int newAcc;
-    int accountNum;
-    std::cout<<"Would you like to log in or create a new account?(1/2)\n";
-    std::cin>>newAcc;
-    if (newAcc==1){
-        accountNum=openingAcc(accounts, openingAmount);
-    }
-    while(check){
-        std::cout << "What would you like to do today?\n1. Deposit\n2. Withdraw\n3. Leave\n:";
+    while(true){
+        std::cout << "What would you like to do today?\n1. Deposit\n2. Withdraw\n3. Log Out\n:";
         std::cin >> selection;
         if (selection<1 || selection>4){
             std::cout << "Please choose a valid option.\n";
@@ -73,8 +65,8 @@ int main(){
         }else if(selection == 1){
             std::cout << "Enter Deposit Amount: ";
             std::cin >> depositAmount;
-            if(accounts.find(accountNum)!=accounts.end()){
-                accounts[accountNum].deposit(depositAmount);
+            if(accounts.find(accountNumber)!=accounts.end()){
+                accounts[accountNumber].deposit(depositAmount);
             }
             else{
                 std::cout<<"Account not found\n";
@@ -82,18 +74,42 @@ int main(){
         }else if(selection == 2){
             std::cout << "Enter Withdraw Amount: ";
             std::cin >> withdrawAmount;
-            if(accounts.find(accountNum)!=accounts.end()){
-                accounts[accountNum].withdraw(withdrawAmount);
+            if(accounts.find(accountNumber)!=accounts.end()){
+                accounts[accountNumber].withdraw(withdrawAmount);
             }
             else{
                 std::cout<<"Account not found\n";
             }
             
         } else if(selection == 3){
-            std::cout << "Leaving";
+            std::cout << "Leaving\n";
             break;
         }
     }
-
+}
+int main(){
+    std::unordered_map<int,BankAccount> accounts;
+    double openingAmount{0};
+    int newAcc;
+    int accountNum;
+    while(true){
+        std::cout<<"Would you like to log in or create a new account?(1/2)\n";
+        std::cin>>newAcc;
+        if (newAcc==2){
+            accountNum=openingAcc(accounts, openingAmount);
+        }
+        if (newAcc==1){
+            while(true){
+                std::cout<< "Please enter your account number: ";
+                std::cin>>accountNum;
+                if (accounts.find(accountNum)!=accounts.end()&&accountNum!=0){
+                    break;
+                }
+                std::cout<<"Number not valid\n";
+                }
+            }
+        bankOps(accounts,accountNum);
+    
+    }
     return 0;
 }
