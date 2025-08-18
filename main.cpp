@@ -1,4 +1,7 @@
 #include "header.hpp"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 class BankAccount{
     private:
@@ -15,7 +18,7 @@ class BankAccount{
         balance+=amount;
         std::cout<< "You are depositing $"<< amount << "\nYou now have $" << balance <<" in your account.\n";
     }
-     void withdraw(double amount){
+    void withdraw(double amount){
         if (amount <= balance){
             balance-=amount;
             std::cout<< "You are withdrawing $"<< amount <<"." << "\nYou now have $" << balance <<" in your account.\n";
@@ -23,8 +26,15 @@ class BankAccount{
             std::cout << "You do not have the funds in your account to make the withdrawal.\n";
         }
     }
+    double getBalance() const {
+        return balance;
+     }
+    
+
     
 };
+
+
 
 int randNum() {
         std::random_device rd;
@@ -87,8 +97,40 @@ void bankOps(std::unordered_map<int,BankAccount>& accounts, int accountNumber){
         }
     }
 }
+void startup(std::unordered_map<int, BankAccount> &accounts, const std::string& filename){
+    std::ifstream i(filename);
+    if (!i.is_open()){
+        std::cout<<"Could not open file.\n";
+        return;
+    }
+    json j;
+    i >> j;
+    
+    for (auto& [key,items] : j.items()){
+        int accountNum = std::stoi(key);
+        std::string name = items["name"];
+        double openingAmt = items["balance"];
+        accounts.emplace(accountNum,BankAccount(name,openingAmt,accountNum));
+    }
+    
+
+}
+void saveMap(std::unordered_map<int,BankAccount> &accounts, const std::string& filename){
+    json j;
+    for (const auto& [accNum, acc] : accounts) {
+        j[std::to_string(accNum)] = {
+            {"name", acc.username},
+            {"balance", acc.getBalance()}
+        };
+    }
+     std::ofstream o("accounts.json");
+    o << std::setw(4) << j << std::endl;
+
+}
+
 int main(){
     std::unordered_map<int,BankAccount> accounts;
+    startup(accounts,"accounts.json");
     double openingAmount{0};
     int newAcc;
     int accountNum;
@@ -107,9 +149,14 @@ int main(){
                 }
                 std::cout<<"Number not valid\n";
                 }
-            }
+        }
+        if (newAcc==3){
+            break;
+        }
+
         bankOps(accounts,accountNum);
     
     }
+    saveMap(accounts, "accounts.json");
     return 0;
 }
